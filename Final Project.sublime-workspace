@@ -40,13 +40,10 @@
 	"buffers":
 	[
 		{
-			"contents": "#include \"NXT_FileIO.c\"\n\n#define CHORD_MOTOR motorA\n#define STRUM_MOTOR motorB\n#define PULL_MOTOR motorC\n\n#define STRUM_RANGE 45\n#define PULL_RANGE 60\n\ntypedef struct{\n	int chordData;\n	int strumData;\n} SongFrame;\n\nvoid Callibrate(){\n	//TODO: Calibrate by using sensors\n	motor[PULL_MOTOR] = -30;\n	wait1Msec(600);\n	motor[PULL_MOTOR] = 0;\n\n\n	motor[STRUM_MOTOR] = -50;--\n	motor[STRUM_MOTOR] = 0;\n	nMotorEncoder[PULL_MOTOR] = 0;\n	nMotorEncoder[STRUM_MOTOR] = 0;\n}\n\nbool GetSongFrame(TFileHandle fin, SongFrame &frame){\n	bool read = true;\n	read &= readIntPC(fin, frame.chordData);\n	read &= readIntPC(fin, frame.strumData);\n	return read;\n}\n\nvoid Turn90Degrees(int direction, int speed){\n	nMotorEncoder[CHORD_MOTOR] = 0;\n	motor[CHORD_MOTOR] = speed * direction;\n	while(nMotorEncoder[CHORD_MOTOR] < 90 * direction){}\n	motor[CHORD_MOTOR] = 0;\n}\n\nvoid Turn180Degrees(int speed){\n	nMotorEncoder[CHORD_MOTOR] = 0;\n	motor[CHORD_MOTOR] = speed;\n	while(nMotorEncoder[CHORD_MOTOR] < 180){}\n	motor[CHORD_MOTOR] = 0;\n}\n\nvoid HoldChord(int chordData, int lastChordData){\n	int modChord = (chordData - lastChordData) % 4 - 2;\n	if(modChord == -1 || modChord == 1){\n		Turn90Degrees(modChord, 100);\n	}\n	else if(modChord == 0){\n		Turn180Degrees(100);\n	}\n}\n\nvoid Strum(int speed){\n	nMotorEncoder[STRUM_MOTOR] = 0;\n	motor[STRUM_MOTOR] = speed;\n	while(nMotorEncoder[STRUM_MOTOR] < STRUM_RANGE){}\n	motor[STRUM_MOTOR] = 0;\n	nMotorEncoder[PULL_MOTOR] = 0;\n	motor[PULL_MOTOR] = 100;\n	while(nMotorEncoder[PULL_MOTOR] < PULL_RANGE){}\n	motor[PULL_MOTOR] = 0;\n	nMotorEncoder[STRUM_MOTOR] = 0;\n	motor[STRUM_MOTOR] = -100;\n	while(nMotorEncoder[STRUM_MOTOR] > 0){}\n	motor[STRUM_MOTOR] = 0;\n	nMotorEncoder[PULL_MOTOR] = 0;\n	motor[PULL_MOTOR] = 100;\n	while(nMotorEncoder[PULL_MOTOR] > 0){}\n	motor[PULL_MOTOR] = 0;\n}\n\nvoid ProcessTime(float lastTime, float targetMSPerFrame){\n	float elapsedMS = time1[T1] - lastTime;\n	if(elapsedMS < targetMSPerFrame) {\n		wait1Msec(targetMSPerFrame - elapsedMS);\n		float testElapsedMS = time1[T1] - lastTime;\n\n		if(testElapsedMS > targetMSPerFrame) {\n			//nxtDisplayString(0, \"Long Wait\");\n		} else {\n			do {\n				elapsedMS = time1[T1] - lastTime;\n			} while(elapsedMS <= targetMSPerFrame);\n		}\n\n	} else {\n		nxtDisplayString(0, \"Missed Frame\");\n	}\n}\n\ntask main(){\n	Callibrate();\n\n	TFileHandle fin;\n	if(openReadPC(fin, \"songData.txt\")){\n\n		int tempo;\n		SongFrame frame;\n		SongFrame lastFrame;\n		readIntPC(fin, tempo);\n\n		float targetMSPerFrame = 60000.0 / tempo;\n		time1[T1] = 0;\n		float lastTime = time1[T1];\n		while(GetSongFrame(fin, frame)){\n			//Process Input\n			HoldChord(frame.chordData, lastFrame.chordData);\n\n			Strum(frame.strumData);\n\n			//Time Processing\n			ProcessTime(lastTime, targetMSPerFrame);\n\n			lastFrame = frame;\n\n			float endTime = time1[T1];\n			float frameTimeMS = endTime - lastTime;\n			lastTime = endTime;\n			float hz = 1000.0 / frameTimeMS;\n\n			//Frame logging\n			nxtDisplayString(1, \"%.02fms/f (%.02fHz)\",\n							 frameTimeMS, hz);\n		}\n\n	}else{\n		nxtDisplayString(0, \"Failure\");\n	}\n\n}\n",
 			"file": "source.cpp",
-			"file_size": 3135,
-			"file_write_time": 131243494333191852,
 			"settings":
 			{
-				"buffer_size": 2999,
+				"buffer_size": 3245,
 				"line_ending": "Windows"
 			}
 		},
@@ -70,7 +67,7 @@
 			"file": "songData.txt",
 			"settings":
 			{
-				"buffer_size": 572,
+				"buffer_size": 573,
 				"line_ending": "Windows"
 			}
 		}
@@ -158,15 +155,15 @@
 					"file": "source.cpp",
 					"settings":
 					{
-						"buffer_size": 2999,
+						"buffer_size": 3245,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								366,
-								366
+								2810,
+								2810
 							]
 						],
 						"settings":
@@ -175,7 +172,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 399.0,
+						"translation.y": 1511.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -245,15 +242,15 @@
 					"file": "songData.txt",
 					"settings":
 					{
-						"buffer_size": 572,
+						"buffer_size": 573,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								97,
-								97
+								3,
+								3
 							]
 						],
 						"settings":
