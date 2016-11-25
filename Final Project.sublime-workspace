@@ -43,7 +43,7 @@
 			"file": "source.cpp",
 			"settings":
 			{
-				"buffer_size": 3245,
+				"buffer_size": 4809,
 				"line_ending": "Windows"
 			}
 		},
@@ -67,7 +67,15 @@
 			"file": "songData.txt",
 			"settings":
 			{
-				"buffer_size": 573,
+				"buffer_size": 2483,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "_zm_pid.h",
+			"settings":
+			{
+				"buffer_size": 567,
 				"line_ending": "Windows"
 			}
 		}
@@ -114,7 +122,7 @@
 	},
 	"find_in_files":
 	{
-		"height": 95.0,
+		"height": 0.0,
 		"where_history":
 		[
 			"",
@@ -126,6 +134,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"1 65",
+			"1 35",
 			"NXTDisplayString",
 			"\"||\""
 		],
@@ -135,6 +145,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"1 100",
 			"nxtDisplayString",
 			"setw(10)"
 		],
@@ -155,15 +166,15 @@
 					"file": "source.cpp",
 					"settings":
 					{
-						"buffer_size": 3245,
+						"buffer_size": 4809,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2810,
-								2810
+								4809,
+								4809
 							]
 						],
 						"settings":
@@ -172,7 +183,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1511.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -180,7 +191,7 @@
 			]
 		},
 		{
-			"selected": 2,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -242,15 +253,15 @@
 					"file": "songData.txt",
 					"settings":
 					{
-						"buffer_size": 573,
+						"buffer_size": 2483,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3,
-								3
+								2483,
+								2443
 							]
 						],
 						"settings":
@@ -259,6 +270,33 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "_zm_pid.h",
+					"settings":
+					{
+						"buffer_size": 567,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								272,
+								272
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++ Starting Kit/C.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 19.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -320,7 +358,7 @@
 		[
 			[
 				"",
-				"/C/Nova Drivu/C++ Repositories/Ge121/Assignment 8/A8Q2.cpp"
+				"/Z/C++ Repositories/Final Project/NXT_FileIO.c"
 			]
 		],
 		"width": 0.0
