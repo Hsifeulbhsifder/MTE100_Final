@@ -5,7 +5,7 @@
 #define STRUM_MOTOR motorB
 #define PULL_MOTOR motorC
 
-#define STRUM_RANGE (70)
+#define STRUM_RANGE (63)
 #define PULL_TIME (40)
 // kp = 1000
 // kp = 100
@@ -13,12 +13,12 @@
 #define KPs (1000)
 #define KIs (100)
 #define KDs (45)
-#define E_THRES (2)
-#define D_THRES (0.01)
+#define E_THRES (5)
+#define D_THRES (0.1)
 
-#define KPc (0)
-#define KIc (0)
-#define KDc (0)
+#define KPc (1750)
+#define KIc (120)
+#define KDc (65)
 
 #define DY (10)
 
@@ -74,8 +74,8 @@ void PIDStrum(float target, float kp, float ki,
 			zeroed = true;
 			nMotorEncoder[STRUM_MOTOR] = 0;
 		}
-		float u = ClosedPIDStep(pid,
-				  nMotorEncoder[STRUM_MOTOR]);
+		float x = nMotorEncoder[STRUM_MOTOR];
+		float u = ClosedPIDStep(pid, x);
 		motor[STRUM_MOTOR] = vel * Clamp(-100, 100, tp + u);
 
 		//Time Processing
@@ -122,17 +122,16 @@ void PIDStrumMiss(float target, float kp, float ki,
 			zeroed = true;
 			nMotorEncoder[STRUM_MOTOR] = 0;
 		}
-		float u = ClosedPIDStep(pid,
-				  nMotorEncoder[STRUM_MOTOR]);
+		float x = nMotorEncoder[STRUM_MOTOR];
+		float u = ClosedPIDStep(pid, x);
 		motor[STRUM_MOTOR] = vel * Clamp(-100, 100, tp + u);
-		float alpha = nMotorEncoder[STRUM_MOTOR] / dx;
+		float alpha = x / dx;
 		if(alpha < 0 || alpha > 1) alpha -= 1;
-		float y = motor[PULL_MOTOR];
+		/*float y = motor[PULL_MOTOR];
 		float y1 = Clamp(-100, 100, dy *
-							(y - 2 * alpha));
+							(y - 2 * alpha));*/
 		float y2 = 100 * cos(PI * alpha);
-		while(y1 == 0){};
-		motor[PULL_MOTOR] = (int)(4 * vel * y2) - 200;
+		motor[PULL_MOTOR] = 1.25 * ((int)(y2) - 30);
 		//Time Processing
 		ProcessTime(lastTime, targetMSPerFrame, T3);
 
@@ -151,10 +150,11 @@ void PIDStrumMiss(float target, float kp, float ki,
 }
 
 void PIDChord(float target, float kp, float ki, float kd){
+	nMotorEncoder[CHORD_MOTOR] = 0;
 	float dt = 1.0 / PID_HZ;
 	float targetMSPerFrame = 1000.0 * dt;
-	float tp = (target < 0 ? -100 : 100);
-	float dx = target - nMotorEncoder[CHORD_MOTOR];
+	float dx = target - 0;
+	float tp = (dx < 0 ? -100 : 100);
 	zmPID pid;
 
 	pid.epsilon = 0.01;
@@ -171,8 +171,8 @@ void PIDChord(float target, float kp, float ki, float kd){
 	time1[T3] = 0;
 	float lastTime = time1[T3];
 	while(Abs(pid.e) > E_THRES || Abs(pid.d) > D_THRES){
-		float u = ClosedPIDStep(pid,
-				  nMotorEncoder[CHORD_MOTOR]);
+		float x = nMotorEncoder[CHORD_MOTOR] % 360;
+		float u = ClosedPIDStep(pid, x);
 		motor[CHORD_MOTOR] = Clamp(-100, 100, tp + u);
 		//Time Processing
 		ProcessTime(lastTime, targetMSPerFrame, T3);
@@ -187,13 +187,23 @@ void PIDChord(float target, float kp, float ki, float kd){
 						 frameTimeMS / 1000.0, hz);
 	}
 	motor[CHORD_MOTOR] = 0;
-	
+
+}
+
+void Temp(int speed){
+	for(int i = 0; i < 30; i++){
+		PIDChord(90 * i, KPc, KIc, KDc);
+		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
+		PIDStrum(0, KPs, KIs, KDs, speed);
+		wait1Msec(500);
+	}
 }
 
 void Test(int speed){
 	if(speed > 10){
 		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
-		PIDStrumMiss(0, KPs, KIs, KDs, speed, DY);
+		//PIDStrum(0, KPs, KIs, KDs, speed);
+		PIDStrumMiss(0, KPs, KIs, KDs, speed * 0.25, DY);
 	}
 }
 
@@ -210,10 +220,14 @@ typedef struct{
 
 void Callibrate(){
 	//TODO: Calibrate by using sensors
-	while(!SensorValue(S2)) motor[STRUM_MOTOR] = -50;
+	while(!SensorValue(S2)) motor[STRUM_MOTOR] = -15;
 	motor[STRUM_MOTOR] = 0;
+	motor[PULL_MOTOR] = -15;
+	wait1Msec(200);
+	motor[PULL_MOTOR] = 0;
 	nMotorEncoder[PULL_MOTOR] = 0;
 	nMotorEncoder[STRUM_MOTOR] = 0;
+	nMotorEncoder[CHORD_MOTOR] = 0;
 }
 
 void GetFrameData(char byte, int& chord, int& strum){
@@ -252,36 +266,25 @@ void Turn180Degrees(int speed){
 }
 
 void HoldChord(int chordData, int lastChordData){
-	int modChord = (chordData - lastChordData) % 4 - 2;
-	if(modChord == -1 || modChord == 1){
-		Turn90Degrees(modChord, 100);
+	if(chordData == 0 && lastChordData == 3){
+		int x = 1;
 	}
-	else if(modChord == 0){
-		Turn180Degrees(100);
+	int modChord = (chordData - lastChordData) % 4 - 2;
+	if(modChord == 1){
+		PIDChord(90, KPc, KIc, KDc);
+	} else if(modChord == -1 || modChord == -5){
+		PIDChord(-90, KPc, KIc, KDc);
+	} else if(modChord == 0){
+		PIDChord(180, KPc, KIc, KDc);
 	}
 }
 
 void Strum(int speed){
-	nMotorEncoder[STRUM_MOTOR] = 0;
-	motor[STRUM_MOTOR] = 100;
-	while(nMotorEncoder[STRUM_MOTOR] < STRUM_RANGE){}
-	motor[STRUM_MOTOR] = 0;
-	nMotorEncoder[PULL_MOTOR] = 0;
-	motor[PULL_MOTOR] = 100;
-	/*while(nMotorEncoder[PULL_MOTOR] < PULL_RANGE){
-		nxtDisplayString(4, "%d", nMotorEncoder[PULL_MOTOR]);
-	}*/
-	wait1Msec(PULL_TIME);
-	motor[PULL_MOTOR] = 0;
-	motor[STRUM_MOTOR] = -10;
-	while(nMotorEncoder[STRUM_MOTOR] > 0){}
-	motor[STRUM_MOTOR] = 10;
-	while(nMotorEncoder[STRUM_MOTOR] < 0){}
-	motor[STRUM_MOTOR] = 0;
-	motor[PULL_MOTOR] = -100;
-	/*while(nMotorEncoder[PULL_MOTOR] > 0){}*/
-	wait1Msec(PULL_TIME);
-	motor[PULL_MOTOR] = 0;
+	if(speed > 10){
+		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
+		//PIDStrum(0, KPs, KIs, KDs, speed);
+		PIDStrumMiss(0, KPs, KIs, KDs, speed * 0.25, DY);
+	}
 }
 
 static SongData songData; //NOTE: This is global because there
@@ -295,35 +298,48 @@ task main(){
 	bMotorReflected[motorC] = true;
 	Callibrate();
 	wait1Msec(1000);
-	while(1) Test(100);
+	//while(1) Test(100);
 	TFileHandle fin;
-	if(openReadPC(fin, "songData.txt")){
+	if(openReadPC(fin, "4chords.txt")){
 		nxtDisplayString(5, "We Good");
-		int strum, chord;
+		int strum, chord, lastChord = 0;
 		GetSongData(fin, songData);
-		float targetMSPerFrame = 60000.0 / 20.0;
-		time1[T1] = 0;
-		float lastTime = time1[T1];
-		for(int i = 0; i < songData.size; i++){
-			GetFrameData(songData.frames[i], chord, strum);
+		float targetMSPerFrame = 60000.0 / (songData.tempo);
+		while(1){
+			if(nNxtButtonPressed == 1){
+				PIDChord(-90, KPc, KIc, KDc);
+				Strum(100);
+			}else if(nNxtButtonPressed == 2){
+				PIDChord(90, KPc, KIc, KDc);
+				Strum(100);
+			}else if(nNxtButtonPressed == 3){
 
-			//Process Input
-			//HoldChord(frame.chordData, lastFrame.chordData);
+				time1[T1] = 0;
+				float lastTime = time1[T1];
+				for(int i = 0; i < songData.size; i++){
+					GetFrameData(songData.frames[i],
+								 chord, strum);
 
-			//Strum(frame.strumData);
-			Test(strum);
+					//Process Input
+					HoldChord(chord, lastChord);
+					lastChord = chord;
+					//Strum(frame.strumData);
+					for(int j = 0; j < 1; j++) Strum(strum);
 
-			//Time Processing
-			ProcessTime(lastTime, targetMSPerFrame, T1);
+					//Time Processing
+					ProcessTime(lastTime, targetMSPerFrame, T1);
 
-			float endTime = time1[T1];
-			float frameTimeMS = endTime - lastTime;
-			lastTime = endTime;
-			float bpm = 60000.0 / frameTimeMS;
+					float endTime = time1[T1];
+					float frameTimeMS = endTime - lastTime;
+					lastTime = endTime;
+					float bpm = 60000.0 / frameTimeMS;
 
-			//Frame logging
-			nxtDisplayString(7, "%.02f(%.02f)", frameTimeMS
-							 / 1000.0, bpm);
+					//Frame logging
+					nxtDisplayString(7, "%.02f(%.02f)",
+									 frameTimeMS
+									 / 1000.0, bpm);
+				}
+			}
 		}
 
 	}else{
