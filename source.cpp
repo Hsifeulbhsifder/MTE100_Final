@@ -17,8 +17,8 @@
 #define D_THRES (0.1)
 
 #define KPc (1750)
-#define KIc (120)
-#define KDc (65)
+#define KIc (480)
+#define KDc (8)
 
 #define DY (10)
 
@@ -95,6 +95,10 @@ void PIDStrum(float target, float kp, float ki,
 
 void PIDStrumMiss(float target, float kp, float ki,
 			  	  float kd, int speed, float dy){
+	float sign = 1;
+	if(target > nMotorEncoder[STRUM_MOTOR]){
+		sign = -1;
+	}
 	float dt = 1.0 / PID_HZ;
 	float targetMSPerFrame = 1000.0 * dt;
 	float tp = (target<nMotorEncoder[STRUM_MOTOR]?-100:100);
@@ -131,7 +135,7 @@ void PIDStrumMiss(float target, float kp, float ki,
 		float y1 = Clamp(-100, 100, dy *
 							(y - 2 * alpha));*/
 		float y2 = 100 * cos(PI * alpha);
-		motor[PULL_MOTOR] = 1.25 * ((int)(y2) - 30);
+		motor[PULL_MOTOR] = sign * 1.25 * ((int)(y2) - 30);
 		//Time Processing
 		ProcessTime(lastTime, targetMSPerFrame, T3);
 
@@ -281,9 +285,37 @@ void HoldChord(int chordData, int lastChordData){
 
 void Strum(int speed){
 	if(speed > 10){
+		#if 1
 		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
-		//PIDStrum(0, KPs, KIs, KDs, speed);
 		PIDStrumMiss(0, KPs, KIs, KDs, speed * 0.25, DY);
+		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
+		PIDStrum(0, KPs, KIs, KDs, speed);
+		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
+		PIDStrumMiss(0, KPs, KIs, KDs, speed * 0.25, DY);
+		#else
+		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
+		PIDStrumMiss(0, KPs, KIs, KDs, speed * 0.25, DY);
+		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
+		PIDStrum(0, KPs, KIs, KDs, speed);
+		PIDStrumMiss(STRUM_RANGE, KPs, KIs, KDs, 
+					 speed * 0.25, DY);
+		PIDStrum(0, KPs, KIs, KDs, speed);
+		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
+		PIDStrum(0, KPs, KIs, KDs, speed);
+		#endif
+	}
+}
+
+void TempSong(){
+	while(1){
+		for(int i = 0; i < 4; i++){
+			Strum(100);
+		}
+		PIDChord(-90, KPc, KIc, KDc);
+		for(int i = 0; i < 4; i++){
+			Strum(100);
+		}
+		PIDChord(90, KPc, KIc, KDc);
 	}
 }
 
@@ -298,7 +330,7 @@ task main(){
 	bMotorReflected[motorC] = true;
 	Callibrate();
 	wait1Msec(1000);
-	//while(1) Test(100);
+	TempSong();
 	TFileHandle fin;
 	if(openReadPC(fin, "4chords.txt")){
 		nxtDisplayString(5, "We Good");
@@ -324,7 +356,7 @@ task main(){
 					HoldChord(chord, lastChord);
 					lastChord = chord;
 					//Strum(frame.strumData);
-					for(int j = 0; j < 1; j++) Strum(strum);
+					Strum(strum);
 
 					//Time Processing
 					ProcessTime(lastTime, targetMSPerFrame, T1);
