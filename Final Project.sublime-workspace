@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"PID",
+				"PIDChord"
+			],
+			[
 				"re",
 				"rescueTime"
 			],
@@ -43,7 +47,7 @@
 			"file": "source.cpp",
 			"settings":
 			{
-				"buffer_size": 4809,
+				"buffer_size": 9029,
 				"line_ending": "Windows"
 			}
 		},
@@ -68,6 +72,22 @@
 			"settings":
 			{
 				"buffer_size": 2483,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "4chords.txt",
+			"settings":
+			{
+				"buffer_size": 267,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "songData2.txt",
+			"settings":
+			{
+				"buffer_size": 0,
 				"line_ending": "Windows"
 			}
 		},
@@ -134,6 +154,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"1 25",
+			"1 100",
 			"1 65",
 			"1 35",
 			"NXTDisplayString",
@@ -145,6 +167,9 @@
 		"regex": false,
 		"replace_history":
 		[
+			"1 100",
+			"1 25",
+			"1 10",
 			"1 100",
 			"nxtDisplayString",
 			"setw(10)"
@@ -166,15 +191,15 @@
 					"file": "source.cpp",
 					"settings":
 					{
-						"buffer_size": 4809,
+						"buffer_size": 9029,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4809,
-								4809
+								7716,
+								7716
 							]
 						],
 						"settings":
@@ -183,7 +208,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 5323.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -191,7 +216,7 @@
 			]
 		},
 		{
-			"selected": 0,
+			"selected": 3,
 			"sheets":
 			[
 				{
@@ -260,8 +285,8 @@
 						"selection":
 						[
 							[
-								2483,
-								2443
+								133,
+								133
 							]
 						],
 						"settings":
@@ -276,6 +301,58 @@
 				},
 				{
 					"buffer": 4,
+					"file": "4chords.txt",
+					"settings":
+					{
+						"buffer_size": 267,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								113,
+								113
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "songData2.txt",
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
 					"file": "_zm_pid.h",
 					"settings":
 					{
@@ -286,8 +363,8 @@
 						"selection":
 						[
 							[
-								272,
-								272
+								450,
+								450
 							]
 						],
 						"settings":
@@ -296,7 +373,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 19.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -358,7 +435,7 @@
 		[
 			[
 				"",
-				"/Z/C++ Repositories/Final Project/NXT_FileIO.c"
+				"/Z/C++ Repositories/Final Project/4chords.txt"
 			]
 		],
 		"width": 0.0

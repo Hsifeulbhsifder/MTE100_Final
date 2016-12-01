@@ -1,5 +1,4 @@
 #include "NXT_FileIO.c"
-#include "_zm_pid.h"
 
 #define CHORD_MOTOR motorA
 #define STRUM_MOTOR motorB
@@ -44,6 +43,38 @@ void ProcessTime(float lastTime, float targetMSPerFrame,
 	} else {
 		nxtDisplayString(0, "Missed Frame");
 	}
+}
+
+typedef struct{
+	float epsilon;
+	float kp;
+	float ki;
+	float kd;
+	float target;
+	float dt;
+	float e;
+	float i;
+	float d;
+} zmPID;
+
+float Abs(float x){
+	return (x < 0 ? -x : x);
+}
+
+float Clamp(float min, float max, float x){
+	return (x < min ? min : (x > max ? max : x));
+}
+
+float ClosedPIDStep(zmPID& pid, float obs){
+	float e = pid.target - obs;
+	if(Abs(e) > pid.epsilon){
+		pid.i += e * pid.dt;
+	}
+	pid.d = (e - pid.e) / pid.dt;
+	float u = pid.kp * e + pid.ki * pid.i + pid.kd * pid.d;
+
+	pid.e = e;
+	return u / 100.0;
 }
 
 void PIDStrum(float target, float kp, float ki,
@@ -194,28 +225,6 @@ void PIDChord(float target, float kp, float ki, float kd){
 
 }
 
-void Temp(int speed){
-	for(int i = 0; i < 30; i++){
-		PIDChord(90 * i, KPc, KIc, KDc);
-		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
-		PIDStrum(0, KPs, KIs, KDs, speed);
-		wait1Msec(500);
-	}
-}
-
-void Test(int speed){
-	if(speed > 10){
-		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
-		//PIDStrum(0, KPs, KIs, KDs, speed);
-		PIDStrumMiss(0, KPs, KIs, KDs, speed * 0.25, DY);
-	}
-}
-
-typedef struct{
-	char chordData;
-	char strumData;
-} SongFrame;
-
 typedef struct{
 	int size;
 	char tempo;
@@ -235,8 +244,8 @@ void Callibrate(){
 }
 
 void GetFrameData(char byte, int& chord, int& strum){
-	chord = (int)((byte >> 5) & 0x07);
-	strum = 4 * (int)((byte & 0x1F));
+	chord = (int)((byte >> 6) & 0x03);
+	strum = 2 * (int)((byte & 0x3F));
 }
 
 void GetSongData(TFileHandle fin, SongData &data){
@@ -246,33 +255,16 @@ void GetSongData(TFileHandle fin, SongData &data){
 	data.tempo = (char) tempo;
 	int temp = 0;
 	while(readIntPC(fin, temp)){
-		data.frames[data.size] =  (char)((0b00000111 &
-								  (char)temp) << 5);
+		data.frames[data.size] =  (char)((0x03 &
+								  (char)temp) << 6);
 		readIntPC(fin, temp);
-		data.frames[data.size] += (char)((0b00011111 &
-								  (char)(temp / 4)));
+		data.frames[data.size] += (char)((0x3F &
+								  (char)(temp / 2)));
 		data.size++;
 	}
 }
 
-void Turn90Degrees(int direction, int speed){
-	nMotorEncoder[CHORD_MOTOR] = 0;
-	motor[CHORD_MOTOR] = speed * direction;
-	while(nMotorEncoder[CHORD_MOTOR] < 90 * direction){}
-	motor[CHORD_MOTOR] = 0;
-}
-
-void Turn180Degrees(int speed){
-	nMotorEncoder[CHORD_MOTOR] = 0;
-	motor[CHORD_MOTOR] = speed;
-	while(nMotorEncoder[CHORD_MOTOR] < 180){}
-	motor[CHORD_MOTOR] = 0;
-}
-
 void HoldChord(int chordData, int lastChordData){
-	if(chordData == 0 && lastChordData == 3){
-		int x = 1;
-	}
 	int modChord = (chordData - lastChordData) % 4 - 2;
 	if(modChord == 1){
 		PIDChord(90, KPc, KIc, KDc);
@@ -297,7 +289,7 @@ void Strum(int speed){
 		PIDStrumMiss(0, KPs, KIs, KDs, speed * 0.25, DY);
 		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
 		PIDStrum(0, KPs, KIs, KDs, speed);
-		PIDStrumMiss(STRUM_RANGE, KPs, KIs, KDs, 
+		PIDStrumMiss(STRUM_RANGE, KPs, KIs, KDs,
 					 speed * 0.25, DY);
 		PIDStrum(0, KPs, KIs, KDs, speed);
 		PIDStrum(STRUM_RANGE, KPs, KIs, KDs, speed);
@@ -306,6 +298,7 @@ void Strum(int speed){
 	}
 }
 
+#if 0
 void TempSong(){
 	while(1){
 		for(int i = 0; i < 4; i++){
@@ -318,6 +311,7 @@ void TempSong(){
 		PIDChord(90, KPc, KIc, KDc);
 	}
 }
+#endif
 
 static SongData songData; //NOTE: This is global because there
 						  //      is not enough local stack
@@ -330,7 +324,7 @@ task main(){
 	bMotorReflected[motorC] = true;
 	Callibrate();
 	wait1Msec(1000);
-	TempSong();
+	//TempSong();
 	TFileHandle fin;
 	if(openReadPC(fin, "4chords.txt")){
 		nxtDisplayString(5, "We Good");
