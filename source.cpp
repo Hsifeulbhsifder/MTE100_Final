@@ -40,9 +40,7 @@
 /** Author: Ben Krowchuk
  *  This function takes a target time per loop, as well as the last
  *  time that recorded on the given timer. It calculates how much
- *  time to wait for in order to have uniform  loop times. It first
- *  calls wait1Msec to get to around the right time, and then it
- *  spin locks until it hits the correct time.
+ *  time to wait for in order to have uniform  loop times.
  */
 void ProcessTime(float lastTime, float targetMSPerFrame,
 				 int timer){
@@ -81,9 +79,6 @@ typedef struct{
 
 /** Author: Taylor Robertson
  *  A function which clamps a given value between to other values.
- *  If the value is less than the minimum value, it outputs
- *  the minimum value. If it is greater than the minimum value,
- *  it outputs the the maximum value. Otherwise it outputs the value.
  */
 float Clamp(float min, float max, float x){
 	float y;
@@ -117,8 +112,7 @@ float ClosedPIDStep(zmPID& pid, float obs){
 /** Author: Zaeem Mohamed
  *  This function houses the PID Control loop that is in charge of
  *  strumming the guitar. It creates a PID object from the parameters
- *  and provides the object to the ClosedPIDStep function. Calls
- *  ClosedPIDStep, Clamp, and ProcessTime.
+ *  and provides the object to the ClosedPIDStep function.
  */
 void PIDStrum(float target, float kp, float ki,
 			  float kd, int speed){
@@ -167,13 +161,12 @@ void PIDStrum(float target, float kp, float ki,
  *  This function is the same as above, except that its goal is to
  *  move the strumming more the same range as above, but instead of
  *  actually strumming, this function makes the pulling motor rotate
- *  so that the pick misses the spring. However this motor has a
+ *  so that the pick misses the strings. However this motor has a
  *  "less than functional" encoder so PID Control could not directly
  *  be applied to the motor. To solve this, the position of the
  *  strumming motor relative to its target set-point was used to
  *  indirectly determine where the pulling motor must be. This
- *  process is explained below. Calls ClosedPIDStep, Clamp, and 
- *  ProcessTime.
+ *  process is explained below.
  */
 void PIDStrumMiss(float target, float kp, float ki,
 			  	  float kd, int speed, float dy){
@@ -232,8 +225,7 @@ void PIDStrumMiss(float target, float kp, float ki,
 /** Author: Zaeem Mohamed
  *  This function is similar to PIDStrum, except that it controls
  *  the chord switching of the robot. Used for turning the chord
- *  motor in intervals of 90 and 180 degree turns. Calls ClosedPIDStep,
- *  Clamp, and ProcessTime.
+ *  motor in intervals of 90 and 180 degree turns.
  */
 void PIDChord(float target, float kp, float ki, float kd){
 	nMotorEncoder[CHORD_MOTOR] = 0;
@@ -288,8 +280,7 @@ typedef struct{
 
 /** Author: Taylor Robertson
  *  This function calibrates all the motors to their fixed starting
- *  position except the chord motor (which must be set manually).
- *  To be called once at the start of the program.
+ *  position except the chord motor.
  */
 void Callibrate(){
 	while(!SensorValue(S2)) motor[STRUM_MOTOR] = -15;
@@ -353,7 +344,7 @@ void HoldChord(int chordData, int lastChordData){
  *  This function receives a speed of strumming. If this speed is less
  *  than or equal to 10, the function does nothing. If it is greater, 
  *  the robot strums the guitar down twice, then up, then down, then up
- *  once more. Calls PIDStrum and PIDStrumMiss.
+ *  once more.
  */
 void Strum(int speed){
 	if(speed > 10){
