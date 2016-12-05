@@ -376,7 +376,8 @@ static SongData songData;
  *  strum data that the robot will adhere to in that iteration. The 
  *  robot then uses that data to switch chords and strums accordingly.
  *  This is repeated until the song is done. At which point the program
- *  flow returns to the top of the main loop.
+ *  flow returns to the top of the main loop. The program terminates
+ *  when the back button is pressed (default).
  */
 task main(){
 	SensorType[S2] = sensorTouch;
