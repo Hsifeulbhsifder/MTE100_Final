@@ -114,8 +114,7 @@ float ClosedPIDStep(zmPID& pid, float obs){
  *  strumming the guitar. It creates a PID object from the parameters
  *  and provides the object to the ClosedPIDStep function.
  */
-void PIDStrum(float target, float kp, float ki,
-              float kd, int speed){
+void PIDStrum(float target, float kp, float ki, float kd, int speed){
     float dt = 1.0 / PID_HZ;
     float targetMSPerFrame = 1000.0 * dt;
     float tp = (target<nMotorEncoder[STRUM_MOTOR]?-100:100);
@@ -133,8 +132,7 @@ void PIDStrum(float target, float kp, float ki,
     bool zeroed = false;
     time1[T3] = 0;
     float lastTime = time1[T3];
-    while(fabs(pid.e) > E_THRES || fabs(pid.d) > D_THRES
-          && !zeroed){
+    while(fabs(pid.e) > E_THRES || fabs(pid.d) > D_THRES && !zeroed){
         if(SensorValue(S2)){
             zeroed = true;
             nMotorEncoder[STRUM_MOTOR] = 0;
@@ -151,8 +149,7 @@ void PIDStrum(float target, float kp, float ki,
         float hz = 1000.0 / frameTimeMS;
 
         //Frame logging
-        nxtDisplayString(6, "%.04f(%.02f)",
-                         frameTimeMS / 1000.0, hz);
+        nxtDisplayString(6, "%.04f(%.02f)", frameTimeMS / 1000.0, hz);
     }
     motor[STRUM_MOTOR] = 0;
 }
@@ -168,8 +165,7 @@ void PIDStrum(float target, float kp, float ki,
  *  indirectly determine where the pulling motor must be. This
  *  process is explained below.
  */
-void PIDStrumMiss(float target, float kp, float ki,
-                  float kd, int speed, float dy){
+void PIDStrumMiss(float target, float kp, float ki, float kd, int speed, float dy){
     float sign = 1;
     if(target > nMotorEncoder[STRUM_MOTOR]){
         sign = -1;
@@ -192,8 +188,7 @@ void PIDStrumMiss(float target, float kp, float ki,
     bool zeroed = false;
     time1[T3] = 0;
     float lastTime = time1[T3];
-    while(fabs(pid.e) > E_THRES || fabs(pid.d) > D_THRES
-          && !zeroed){
+    while(fabs(pid.e) > E_THRES || fabs(pid.d) > D_THRES && !zeroed){
         if(SensorValue(S2)){
             zeroed = true;
             nMotorEncoder[STRUM_MOTOR] = 0;
@@ -215,8 +210,7 @@ void PIDStrumMiss(float target, float kp, float ki,
         float hz = 1000.0 / frameTimeMS;
 
         //Frame logging
-        nxtDisplayString(6, "%.04f(%.02f)",
-                         frameTimeMS / 1000.0, hz);
+        nxtDisplayString(6, "%.04f(%.02f)", frameTimeMS / 1000.0, hz);
     }
     motor[STRUM_MOTOR] = 0;
     motor[PULL_MOTOR] = 0;
@@ -258,8 +252,7 @@ void PIDChord(float target, float kp, float ki, float kd){
         float hz = 1000.0 / frameTimeMS;
 
         //Frame logging
-        nxtDisplayString(6, "%.04f(%.02f)",
-                         frameTimeMS / 1000.0, hz);
+        nxtDisplayString(6, "%.04f(%.02f)", frameTimeMS / 1000.0, hz);
     }
     motor[CHORD_MOTOR] = 0;
 
@@ -315,11 +308,9 @@ void GetSongData(TFileHandle fin, SongData &data){
     data.tempo = tempo;
     int temp = 0;
     while(readIntPC(fin, temp)){
-        data.frames[data.size] =  (char)((0x03 &
-                                  (char)temp) << 6);
+        data.frames[data.size] =  (char)((0x03 & (char)temp) << 6);
         readIntPC(fin, temp);
-        data.frames[data.size] += (char)((0x3F &
-                                  (char)(temp / 2)));
+        data.frames[data.size] += (char)((0x3F & (char)(temp / 2)));
         data.size++;
     }
 }
@@ -403,8 +394,7 @@ task main(){
                 time1[T1] = 0;
                 float lastTime = time1[T1];
                 for(int i = 0; i < songData.size; i++){
-                    GetFrameData(songData.frames[i],
-                                 chord, strum);
+                    GetFrameData(songData.frames[i], chord, strum);
 
                     //Process Input
                     HoldChord(chord, lastChord);
@@ -421,9 +411,7 @@ task main(){
                     float bpm = 60000.0 / frameTimeMS;
 
                     //Frame logging
-                    nxtDisplayString(7, "%.02f(%.02f)",
-                                     frameTimeMS
-                                     / 1000.0, bpm);
+                    nxtDisplayString(7, "%.02f(%.02f)", frameTimeMS / 1000.0, bpm);
                 }
             }
         }
